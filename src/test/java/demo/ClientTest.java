@@ -19,7 +19,7 @@ public class ClientTest {
     messages.subscribe(subscriber);
 
     subscriber.assertCompleted();
-    subscriber.assertReceivedOnNext(Arrays.asList("msg1", "msg2", "msg3"));
+    subscriber.assertReceivedOnNext(Arrays.asList("msg1", "msg5", "msg3"));
   }
 
 }
