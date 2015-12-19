@@ -7,13 +7,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static retrofit.RestAdapter.LogLevel.NONE;
 
 public class Client {
-
+  private final double BACKOFF_ERROR_FACTOR = 0.5;
+  private Map<Integer, Long> backoffs = new HashMap<>();
+  private ChartBuilder chartBuilder = new ChartBuilder();
   private final Api api;
 
   Client(Api api) {
@@ -46,13 +51,19 @@ public class Client {
                             attempts
                                 .zipWith(Observable.range(1, 8), (attemptNumber, i) -> i)
                                 .flatMap(i -> {
-                                  int sec = 1 << i;
-                                  System.out.println("Attempt " + i + ", delay " + sec + "seconds");
-                                  return Observable.timer(sec, SECONDS);
+                                  long millis = (long) (i * 1000 * getRandomDouble(1.0, BACKOFF_ERROR_FACTOR));
+                                  System.out.println("Attempt " + i + ", delay " + millis + " millis");
+                                  backoffs.put(i, millis);
+                                  chartBuilder.processBackoffs(backoffs);
+                                  return Observable.timer(millis, MILLISECONDS);
                                 })
                                 .doOnTerminate(() -> System.out.println("I gave up"))
                     )
         );
+  }
+
+  public void clearBackoffs(){
+      this.backoffs.clear();
   }
 
   public static void main(String[] args) {
@@ -69,12 +80,18 @@ public class Client {
         .subscribe(
             message -> {
               System.out.println(message.user + ": " + message.text);
+              client.clearBackoffs();
             },
             error -> {
               System.err.println("ERR: " + error.getMessage());
               System.exit(1);
             }
         );
+  }
+
+  private double getRandomDouble(double initial, double errorFactor) {
+      Random random = new Random();
+      return (initial - errorFactor + (errorFactor * 2 * random.nextDouble()));
   }
 
 }

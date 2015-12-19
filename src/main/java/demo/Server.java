@@ -68,7 +68,7 @@ public class Server {
               })
               .concatMap(m -> {
                 System.out.println(counter.get());
-                if (counter.get() < 2) {
+                if (counter.get() < 4) {
                   response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
                   counter.incrementAndGet();
                 } else {

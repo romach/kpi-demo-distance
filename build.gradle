@@ -8,6 +8,7 @@ dependencies {
   compile 'io.reactivex:rxjava:1.1.0'
   compile 'com.squareup.retrofit:retrofit:1.9.0'
   compile 'io.reactivex:rxnetty:0.4.15'
+  compile 'org.jfree:jfreechart:1.0.19'
   testCompile 'junit:junit:4.12'
   testCompile 'org.mockito:mockito-all:1.10.19'
 }
